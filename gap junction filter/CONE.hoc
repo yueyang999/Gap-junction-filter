@@ -1,0 +1,57 @@
+begintemplate CONE
+public connect2target
+public init,biophys,geom,subsets
+public syns,x,y,z
+public soma,stim
+public all
+public photo, gid, attachstim
+
+objref syns
+create soma
+
+proc init() {
+    gid = $1
+    subsets()
+    geom()
+    biophys()
+    syns=new List()
+    x=y=z=0
+
+}
+objref all
+proc subsets(){
+    objref all
+    all=new SectionList()
+    forall all.append()
+}
+
+proc geom(){
+    soma{
+        nseg=1
+        diam=10/PI
+        L=10
+    }
+}
+
+proc biophys(){
+    soma{
+    cm=30  // 1uF/cm2
+    insert pas g_pas=0.0014
+    }
+}
+objectvar stim
+proc attachstim(){
+   soma stim = new sim_current($1)
+   stim.intensity=$2
+   stim.stime=$3
+}
+
+
+obfunc connect2target() { localobj nc //$o1 target point process, optional $o2 returned NetCon
+  soma nc = new NetCon(&v(1), $o1)
+  nc.threshold = 10
+  if (numarg() == 2) { $o2 = nc } // for backward compatibility
+  return nc
+}
+endtemplate CONE
+
