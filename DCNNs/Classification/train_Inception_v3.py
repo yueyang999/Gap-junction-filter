@@ -13,7 +13,7 @@ from torch import nn, optim
 from torchvision import transforms
 from torch.optim.lr_scheduler import StepLR
 
-#参数配置
+#parameter settings
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser("""Image classification!""")
