@@ -18,16 +18,19 @@ This subdirectory contains all images and statictics used for generating figures
 This subdirectory contains code for blind denoising, integrated gradient analysis and classification in our experiments.
 
 The training and testing dataset for blind denoising come from the paper [Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising](https://arxiv.org/abs/1608.03981). The runing sample follows:
+
 `python DnCNN.py --dataset_traiin=train_sample --dataset_test=test_sample --weights=trained_weights.h5 --region` (Training Model)
+
 `python DnCNN_Integrated_Gradient_multi.py --dataset_test=test_sample --weights=trained_weights.h5 --region` (Integrated Gradient Analysis)
 
 The training and testing dataset for classification come 
 from the paper [Generalisation in humans and deep neural networks](https://arxiv.org/abs/1808.08750). The runing sample follows: 
+
 `python main_resnet50.py --gpus=4 --train_data=p20_train_G-filter --test_data=w0.05_G-filter --save_weights=p20_gap5` (Training Model)
 
 ## detailed photoreceptor network
 This subdirectory contains code for detailed photoreceptor model, its network and STA analysis. 
-Users first run './nrnivmodl' for 'mod' compiling. Then, run 'sta_generate_voltage.hoc' to generate voltage curves for STA analysis.
+Users first run `./nrnivmodl` for `mod` compiling. Then, run `sta_generate_voltage.hoc` to generate voltage curves for STA analysis.
 
 ## gap junction filter
 This subdirectory contains code for simplified photoreceptor network, i.e. G-filter.
