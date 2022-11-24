@@ -1,0 +1,99 @@
+
+begintemplate ROD
+public init,biophys,geom,subsets
+public connect2target,attachstim,syns,x,y,z
+public soma
+public all
+public photo, gid
+public gaps
+public gap_id, new_gap, use_gap
+
+objref syns
+objref gaps
+
+create soma
+
+proc init(){
+    gid = $1
+    subsets()
+    geom()
+    biophys()
+    syns=new List()
+    x=y=z=0
+    gaps = new List()
+    gap_id = 0
+//     for i=0,3{
+//     new_gap(0)
+// }
+}
+
+objref all
+proc subsets(){
+    objref all
+    all=new SectionList()
+    forall all.append()
+}
+
+proc geom(){
+    soma{
+        nseg=1
+        diam=10/PI
+        L=10
+    }
+}
+
+proc biophys(){
+    soma{
+        cm=30  // 1uF/cm2
+        insert Kv
+        insert hyper
+        insert Kx
+        insert Leak
+        insert Ca
+        insert Cad
+        insert CPR
+        Cai=0.38   
+    }
+}
+
+obfunc connect2target(){ localobj nc
+    soma nc=new NetCon(&v(0.8),$o1)
+    nc.threshold=-80
+    return nc
+}
+
+obfunc new_gap(){ localobj gap
+    soma gap = new Gap(0.8)
+    gap.g = $1
+    setpointer gap.vgap, soma.v(0.8)
+    gaps.append(gap)
+    return gap
+}
+
+obfunc use_gap(){ localobj gap
+    gap = gaps.o(gap_id)
+    gap_id = gap_id + 1
+    return gap
+}
+
+objectvar photo
+proc attachstim(){
+   soma photo = new photocurrent($1)
+   photo.input=$2
+   photo.env=$3
+   photo.stime=$4
+   photo.htime=$5
+}
+
+endtemplate ROD
+
+//finitialize(-42.8838)
+//fcurrent()
+
+//secondorder=2
+
+//ts=0.01
+//tstop=10000
+//cvode.active(0)
+
+

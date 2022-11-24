@@ -1,0 +1,111 @@
+load_file("stdgui.hoc")
+g_gap = 0.005
+dt = 0.5
+tstop = 1000
+width=50
+height=50
+N = width*height
+NC = 2*((width-1)*height+width*(height-1))
+
+load_file("CONE.hoc")
+
+secondorder=2
+cvode.active(0)
+
+STIM_LOC = 0.5
+GAP_LOC = 0.5
+REC_LOC = 0.5
+
+objref cones, gaps, stims, contriparl, pc, nclist
+objref conns, Cone, photo, f, w, gap, nc, nil
+objref w, v_record, v_records
+strdef s
+
+pc = new ParallelContext()
+
+nwork = pc.nhost
+if (nwork < 2){
+    nwork=1
+    myid = 0
+}else{
+    myid = pc.id
+}
+
+cones = new List()
+gaps = new List()
+v_records = new List()
+
+sprint(s, "50x50_input_sample.txt")
+f = new File(s)
+f.ropen()
+stims = new Matrix()
+stims.scanf(f, N, 1)
+f.close()
+
+for i=0,N-1{
+    node_id = i%nwork
+    pc.set_gid2node(i, node_id)
+}
+
+objref gap
+
+for i=0,N-1{
+    if(pc.gid_exists(i) == 1){
+        objref Cone, photo
+	Cone = new CONE(i)
+	Cone.attachstim(0.5, stims.x[i][0],100)
+	cones.append(Cone)
+	Cone.soma pc.source_var(&v(GAP_LOC), i)
+	v_record = new Vector()
+	v_record.record(&Cone.soma.v(REC_LOC))
+	v_records.append(v_record)
+    }    
+}
+
+sprint(s, "gap_connect_50x50.txt")
+strdef line
+from_id = 0
+to_id = 0
+
+f = new File(s)
+f.ropen()
+for i=0, NC-1{
+    f.gets(line)
+    sscanf(line, "%d %d", &from_id, &to_id)
+    if(pc.gid_exists(to_id) > 0){
+	Cone = cones.o(int(to_id/nwork))
+	Cone.soma gap = new Gap(GAP_LOC)
+	gap.g = g_gap
+	pc.target_var(&gap.vgap, from_id)
+	gaps.append(gap)
+     }
+}
+f.close()
+
+proc setdt(){
+   dt = dt
+}
+
+proc init() {
+  finitialize(-41.4286)
+  fcurrent()
+}
+
+
+pc.setup_transfer()
+pc.set_maxstep(2)
+stdinit()
+pc.psolve(tstop)
+pc.done()
+ 
+w = new File()
+sprint(s, "1_min_voltage_%g_%g.txt", g_gap, myid)
+w.wopen(s)
+
+for i=0,cones.count()-1{
+
+    w.printf("%d %g\n", cones.o(i).gid, v_records.o(i).min())
+}
+
+w.close()
+quit()
